@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Body-Safe Materials Checker</title>
+  <meta name="description" content="Educational body-safe materials reference for adult toys and pleasure products. Not medical advice.">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f0e8;
+      --ink: #1c2430;
+      --muted: #3e4a58;
+      --surface: #fffdf9;
+      --line: #ddd6c8;
+      --accent: #0f5f5a;
+      --accent-contrast: #ffffff;
+      --warn-bg: #f8f1e3;
+      --warn-ink: #5c4010;
+      --porous-bg: #f8e7d6;
+      --porous-ink: #6b3208;
+      --ok-bg: #e2f2e6;
+      --ok-ink: #14532d;
+      --var-bg: #e6eaf2;
+      --var-ink: #243044;
+      --shadow: 0 1px 2px rgba(28, 36, 48, 0.05);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #12171b;
+        --ink: #e8eef2;
+        --muted: #c5d0d8;
+        --surface: #1b2329;
+        --line: #314049;
+        --accent: #8fd0c8;
+        --accent-contrast: #08211f;
+        --warn-bg: #2a2418;
+        --warn-ink: #f0ddb8;
+        --porous-bg: #3a2a1c;
+        --porous-ink: #f3c9a4;
+        --ok-bg: #173224;
+        --ok-ink: #b7ebc6;
+        --var-bg: #222a38;
+        --var-ink: #d5deee;
+        --shadow: none;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    a { color: var(--accent); }
+    a:hover { text-decoration-thickness: 2px; }
+
+    :focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .skip {
+      position: absolute;
+      left: 0.75rem;
+      top: -3.5rem;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      z-index: 5;
+    }
+
+    .skip:focus { top: 0.75rem; }
+
+    .wrap {
+      width: min(1120px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    header.wrap { padding: 1.35rem 0 0; }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0.35rem 0 0.75rem;
+      font-family: Georgia, "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+      font-size: clamp(2rem, 4vw, 2.85rem);
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      line-height: 1.12;
+    }
+
+    .lede {
+      max-width: 44rem;
+      margin: 0;
+      font-size: 1.02rem;
+    }
+
+    .disclaimer {
+      margin: 0.85rem 0 0;
+      padding: 0.75rem 0.9rem;
+      background: var(--warn-bg);
+      color: var(--warn-ink);
+      border-radius: 12px;
+      line-height: 1.45;
+    }
+
+    .disclaimer strong { font-weight: 750; }
+
+    .controls {
+      display: grid;
+      gap: 0.7rem;
+      margin: 0.9rem 0 0.25rem;
+    }
+
+    .controls label,
+    .controls legend {
+      font-weight: 700;
+    }
+
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      min-inline-size: 0;
+    }
+
+    input[type="search"] {
+      width: 100%;
+      margin-top: 0.35rem;
+      min-height: 48px;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    .filters button {
+      min-height: 44px;
+      padding: 0.4rem 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .filters button[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-contrast);
+    }
+
+    .key,
+    #count,
+    #empty {
+      color: var(--muted);
+      margin: 0.75rem 0;
+    }
+
+    #empty {
+      padding: 1rem;
+      background: var(--surface);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    caption {
+      caption-side: bottom;
+      text-align: left;
+      padding: 0.75rem 1rem 1rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 0.95rem 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 1;
+    }
+
+    tbody th[scope="row"] {
+      font-size: 1rem;
+      font-weight: 750;
+      min-width: 11rem;
+    }
+
+    tbody tr:last-child th,
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .aka {
+      display: block;
+      margin-top: 0.2rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 550;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-non-porous { background: var(--ok-bg); color: var(--ok-ink); }
+    .badge-porous { background: var(--porous-bg); color: var(--porous-ink); }
+    .badge-varies { background: var(--var-bg); color: var(--var-ink); }
+
+    .notes { min-width: 16rem; }
+    .care { min-width: 14rem; }
+    .uses { min-width: 12rem; }
+
+    footer.wrap {
+      margin-top: 1.5rem;
+      padding: 1.1rem 0 2.25rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    footer p { margin: 0.35rem 0; }
+
+    @media (max-width: 1040px) {
+      .table-wrap {
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        overflow: visible;
+      }
+
+      table { display: block; }
+
+      caption {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      tbody { display: block; }
+
+      tbody tr {
+        display: block;
+        margin: 0 0 0.85rem;
+        padding: 0.35rem 0 0.7rem;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      tbody tr[hidden] { display: none; }
+
+      tbody th[scope="row"],
+      tbody td {
+        display: block;
+        width: auto;
+        min-width: 0;
+        border: 0;
+        padding: 0.45rem 1rem;
+      }
+
+      tbody th[scope="row"] { padding-top: 0.85rem; }
+
+      tbody td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 0.15rem;
+        color: var(--muted);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+    }
+
+    @media print {
+      body { background: #fff; color: #000; }
+      .skip, .controls, footer { display: none; }
+      .table-wrap, tbody tr { box-shadow: none; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#materials">Skip to materials</a>
+  <header class="wrap">
+    <p class="eyebrow">Educational reference</p>
+    <h1>Body-Safe Materials Checker</h1>
+    <p class="lede">Compare materials used in adult toys and pleasure products. Each row covers porosity, body-safe context, care, and common uses for a material family, not a test of any brand or batch.</p>
+    <aside class="disclaimer" role="note">
+      <strong>Not medical advice.</strong>
+      This is general education, not a certification, and not a promise that a product is safe for you. “Body-safe,” “medical,” and “phthalate-free” do not name the polymer. See a clinician for pain, irritation, allergies, or infection. A damaged surface, a missing flared base, or a toy that was not cleaned can still cause injury.
+    </aside>
+  </header>
+
+  <main class="wrap">
+    <form id="filters" class="controls" role="search">
+      <div>
+        <label for="q">Search materials</label>
+        <input id="q" type="search" name="q" placeholder="Try silicone, glass, steel, or lubricant" autocomplete="off" enterkeyhint="search">
+      </div>
+      <fieldset>
+        <legend>Porosity</legend>
+        <div class="filters">
+          <button type="button" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" data-filter="non-porous" aria-pressed="false">Non-porous</button>
+          <button type="button" data-filter="porous" aria-pressed="false">Porous</button>
+          <button type="button" data-filter="varies" aria-pressed="false">Varies</button>
+        </div>
+      </fieldset>
+    </form>
+
+    <p class="key">Non-porous means an intact surface can be cleaned more fully. Porous means the material can trap moisture and is harder to get completely clean. “Varies” means the published formula is a blend, so you cannot assume it is non-porous.</p>
+
+    <section id="materials" aria-labelledby="materials-title">
+      <h2 id="materials-title" class="eyebrow">Materials</h2>
+      <p id="count">9 materials. With JavaScript off, the full table stays visible and the filters do not run.</p>
+      <p id="empty" hidden>No materials match that search or filter. Clear the search, or set porosity back to All.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Educational summary of materials commonly named on adult toy packaging. Follow the maker’s care card for the item you own.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Material</th>
+              <th scope="col">Porous?</th>
+              <th scope="col">Body-safe notes</th>
+              <th scope="col">Care tips</th>
+              <th scope="col">Common uses</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-porous="non-porous" data-search="silicone silicon platinum medical-grade medical grade platinum-cure cure non-porous">
+              <th scope="row">
+                Medical-grade / platinum silicone
+                <span class="aka">Also called platinum-cure silicone</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-non-porous">Non-porous</span></td>
+              <td class="notes" data-label="Body-safe notes">Solid 100% platinum-cured silicone is non-porous, and it is the soft material most educators treat as suitable for body contact. “Medical-grade” on a package does not prove the cure type or that the item is free of fillers. A silicone blend is a different material. Silicone the polymer is not the element silicon. This page cannot verify a specific product.</td>
+              <td class="care" data-label="Care tips">Wash with mild unscented soap and warm water, then dry fully. Solid pieces with no motor, battery, seam glue, or coating can often be boiled when the maker says so. Choose water-based lubricant; silicone lubricant can make some silicone surfaces tacky. Store it out of contact with TPE, PVC, and jelly.</td>
+              <td class="uses" data-label="Common uses">Insertable toys, plugs, and external massagers sold as 100% silicone.</td>
+            </tr>
+            <tr data-porous="non-porous" data-search="abs acrylonitrile butadiene styrene hard plastic rigid housing non-porous">
+              <th scope="row">
+                ABS
+                <span class="aka">Acrylonitrile butadiene styrene</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-non-porous">Non-porous</span></td>
+              <td class="notes" data-label="Body-safe notes">ABS is a rigid, non-porous plastic used for hard shells and handles. An intact, smooth surface is generally considered acceptable for skin contact. It does not flex like silicone. Heat and solvents can warp it or leave it hazy.</td>
+              <td class="care" data-label="Care tips">Wash with mild soap and water. Do not boil. Avoid acetone, concentrated alcohol, bleach, and scouring pads. Dry seams and button gaps before storing.</td>
+              <td class="uses" data-label="Common uses">Vibrator housings, rigid handles, and hard external toys.</td>
+            </tr>
+            <tr data-porous="porous" data-search="tpe tpr thermoplastic elastomer rubber porous microporous soft">
+              <th scope="row">
+                TPE/TPR
+                <span class="aka">Thermoplastic elastomer / thermoplastic rubber</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-porous">Porous</span></td>
+              <td class="notes" data-label="Body-safe notes">TPE and TPR are soft materials. In this product category they are treated as porous: they can hold moisture and cannot be sterilized as completely as silicone, glass, or steel. Phthalate-free does not make them non-porous. Formulas differ by maker. A strong chemical odor, an oily film, or a surface that turns sticky is a reason to stop using the item.</td>
+              <td class="care" data-label="Care tips">Wash soon after use with mild soap and warm water, including folds, and dry completely. Do not boil. For internal use or sharing, a condom is a practical barrier. Use water-based lubricant. Store the item alone, in a cool dry place, so it does not fuse to silicone or other soft materials.</td>
+              <td class="uses" data-label="Common uses">Soft sleeves, stroker-style toys, and flexible shapes where the maker names TPE or TPR.</td>
+            </tr>
+            <tr data-porous="porous" data-search="pvc polyvinyl chloride vinyl phthalate plasticizer soft plastic porous">
+              <th scope="row">
+                PVC
+                <span class="aka">Soft polyvinyl chloride</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-porous">Porous</span></td>
+              <td class="notes" data-label="Body-safe notes">Soft PVC is made flexible with plasticizers. Those formulas are often undisclosed and have historically included phthalates, which health authorities recommend limiting in products that contact the body. Soft PVC is porous, may smell like vinyl, and is not regarded as a body-safe internal material. Rigid PVC used in plumbing is a different product.</td>
+              <td class="care" data-label="Care tips">If you already own a piece, wash it with mild soap and water and dry it fully. Do not boil, and do not use solvent cleaners. Store it away from other toys. A condom reduces contact but does not change the material. Retire pieces that feel greasy, smell strongly of chemicals, or are meant to be inserted.</td>
+              <td class="uses" data-label="Common uses">Low-cost soft toys. For internal use, educators usually point to labeled 100% silicone, borosilicate glass, or solid stainless steel instead.</td>
+            </tr>
+            <tr data-porous="porous" data-search="jelly gel unknown soft plastic rubbery clear translucent phthalate porous">
+              <th scope="row">
+                Jelly / unknown soft plastics
+                <span class="aka">Unnamed clear or translucent soft plastics</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-porous">Porous</span></td>
+              <td class="notes" data-label="Body-safe notes">Jelly is a sales word, not a standard polymer. It usually means a clear or translucent soft plastic, often PVC or an unnamed elastomer, kept flexible by plasticizers. These materials are porous, may weep an oily film, and can yellow, cloud, or turn sticky. If a seller will not name the material, treat the item as an unknown soft plastic and do not assume it is body-safe.</td>
+              <td class="care" data-label="Care tips">Do not boil it, and do not count on home cleaning to sterilize it. Keep it from touching silicone and other toys. Educators generally advise against internal use. A condom is harm reduction for something you already own, not an endorsement of jelly.</td>
+              <td class="uses" data-label="Common uses">Clear soft toys sold without a named material. There is no body-safe grade of jelly.</td>
+            </tr>
+            <tr data-porous="non-porous" data-search="borosilicate glass annealed non-porous inert">
+              <th scope="row">
+                Borosilicate glass
+                <span class="aka">Laboratory-family glass, when annealed for this use</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-non-porous">Non-porous</span></td>
+              <td class="notes" data-label="Body-safe notes">Borosilicate glass is non-porous and chemically inert when it is annealed, smoothly finished, and free of cracks, chips, or paint on the surface that contacts the body. It should not flex in the hand. Ordinary decorative glass and thin soda-lime glass break more easily. Any crack or chip is a reason to discard the piece, because broken glass can cut tissue.</td>
+              <td class="care" data-label="Care tips">Wash with soap and water. Intact, uncoated borosilicate with no electronics can usually be boiled if the maker agrees. Change temperature gradually to avoid thermal shock. Water-based and silicone lubricants are both compatible with bare glass. Look over the whole piece, including the base, in bright light before use.</td>
+              <td class="uses" data-label="Common uses">Rigid insertable toys and plugs. Insertable pieces need a flared base or another handle that cannot slip fully inside the body.</td>
+            </tr>
+            <tr data-porous="non-porous" data-search="stainless steel 304 316 surgical metal non-porous">
+              <th scope="row">
+                Stainless steel
+                <span class="aka">Often 304 or 316 when a grade is stated</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-non-porous">Non-porous</span></td>
+              <td class="notes" data-label="Body-safe notes">Solid stainless steel is non-porous. It is a strong body-contact material when the toy is solid steel, not a thin plate over another metal, and the surface is smooth and unchipped. Steel is heavy and it conducts heat and cold. Deep scratches or a flaking finish are reasons to stop using it.</td>
+              <td class="care" data-label="Care tips">Wash with mild soap and water. Solid, uncoated steel with no electronics can be boiled when the maker allows it. Dry it so water spots do not sit on the surface. It is compatible with water-based and silicone lubricants. Confirm the base or stopper cannot pass fully into the body.</td>
+              <td class="uses" data-label="Common uses">Plugs and other rigid toys machined from solid steel.</td>
+            </tr>
+            <tr data-porous="non-porous" data-search="aluminum aluminium anodized anodised metal non-porous">
+              <th scope="row">
+                Aluminum
+                <span class="aka">Often anodized</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-non-porous">Non-porous</span></td>
+              <td class="notes" data-label="Body-safe notes">Solid aluminum is non-porous. Color on these toys is often an anodized oxide layer. That finish is suitable for contact only while it is intact; chips and worn edges can expose metal or lift dye. Painted or powder-coated pieces are not the same as a purpose-made anodized surface. Aluminum is lighter than steel and still conducts temperature. People with a known metal allergy should be cautious with any alloy.</td>
+              <td class="care" data-label="Care tips">Wash with mild soap and water. Do not boil unless the maker says the finish tolerates heat. Skip bleach and abrasive pads. Stop using the item if color flakes or the surface roughens. Water-based and silicone lubricants are compatible with an intact metal surface.</td>
+              <td class="uses" data-label="Common uses">Lightweight plugs and rigid toys with an unbroken anodized surface.</td>
+            </tr>
+            <tr data-porous="varies" data-search="elastomer blend blends silicone blend proprietary soft touch dual-density dual density varies filler">
+              <th scope="row">
+                Elastomer blends
+                <span class="aka">Silicone blends and unnamed soft-touch mixes</span>
+              </th>
+              <td data-label="Porous?"><span class="badge badge-varies">Varies</span></td>
+              <td class="notes" data-label="Body-safe notes">“Elastomer blend,” “silicone blend,” and similar phrases mean a mixture. Some mixes are silicone plus fillers; others are closer to TPE. A blend is not the same statement as 100% platinum silicone, and porosity depends on a formula that is often unpublished. If the contact surface is not disclosed as non-porous 100% silicone, treat it as unknown.</td>
+              <td class="care" data-label="Care tips">Wash with mild soap and water and dry completely. Do not boil unless you have material-specific instructions, which blends rarely include. A condom is a reasonable barrier for internal or shared use while the formula is unclear. Store it apart from silicone, TPE, and jelly. Water-based lubricant is the cautious default.</td>
+              <td class="uses" data-label="Common uses">Dual-density toys and products described as silicone-like without a 100% silicone claim.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p><a href="https://github.com/rosetoy/body-safe-materials-checker">Source on GitHub</a></p>
+    <p>Maintained for RoseToy US — <a href="https://rosetoyus.com/">https://rosetoyus.com/</a></p>
+  </footer>
+
+  <script>
+    (function () {
+      var form = document.getElementById("filters");
+      var input = document.getElementById("q");
+      var buttons = Array.prototype.slice.call(document.querySelectorAll(".filters button"));
+      var rows = Array.prototype.slice.call(document.querySelectorAll("tbody tr"));
+      var count = document.getElementById("count");
+      var empty = document.getElementById("empty");
+      var total = rows.length;
+
+      function mode() {
+        var pressed = document.querySelector('.filters button[aria-pressed="true"]');
+        return pressed ? pressed.getAttribute("data-filter") : "all";
+      }
+
+      function apply() {
+        var query = input.value.trim().toLowerCase();
+        var porosity = mode();
+        var shown = 0;
+
+        rows.forEach(function (row) {
+          var haystack = ((row.getAttribute("data-search") || "") + " " + row.textContent).toLowerCase();
+          var porosityOk = porosity === "all" || row.getAttribute("data-porous") === porosity;
+          var textOk = query === "" || haystack.indexOf(query) !== -1;
+          var visible = porosityOk && textOk;
+          row.hidden = !visible;
+          if (visible) shown += 1;
+        });
+
+        count.textContent = "Showing " + shown + " of " + total + (total === 1 ? " material" : " materials");
+        empty.hidden = shown !== 0;
+      }
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        apply();
+      });
+
+      input.addEventListener("input", apply);
+
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          buttons.forEach(function (other) {
+            other.setAttribute("aria-pressed", other === button ? "true" : "false");
+          });
+          apply();
+        });
+      });
+
+      apply();
+    })();
+  </script>
+</body>
+</html>
